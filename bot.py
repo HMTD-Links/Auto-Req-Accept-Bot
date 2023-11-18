@@ -10,13 +10,12 @@ import asyncio, datetime, time
 ACCEPTED_TEXT = "Hey {user}\n\nYour Request For {chat} Is Accepted ✅"
 START_TEXT = "Hai {}\n\nI am Auto Request Accept Bot With Working For All Channel. Add Me In Your Channel To Use"
 
-API_ID = int(env.get('API_ID'))
-API_HASH = env.get('API_HASH')
-BOT_TOKEN = env.get('BOT_TOKEN')
-DB_URL = env.get('DB_URL')
-ADMINS = int(env.get('ADMINS'))
+API_ID = int(environ.get('API_ID'))
+API_HASH = environ.get('API_HASH')
+BOT_TOKEN = environ.get('BOT_TOKEN')
+DB_URL = environ.get('DB_URL')
+ADMINS = int(environ.get('ADMINS'))
 BANNED_CHANNELS = list(set(int(x) for x in str(getenv("BANNED_CHANNELS", "-1001296894100")).split()))
-
 
 Dbclient = AsyncIOMotorClient(DB_URL)
 Cluster = Dbclient['Cluster0']
@@ -75,7 +74,24 @@ async def broadcast(c, m):
     await sts.delete()
     await message.reply_text(f"Broadcast Completed:\nCompleted in {time_taken} seconds.\n\nTotal Users {total_users}\nCompleted: {done} / {total_users}\nSuccess: {success}\nFailed: {failed}", quote=True)
 
-  
+ @Bot.on_message(
+    filters.channel
+    & (
+        filters.document
+        | filters.video
+    ),
+    group=4,
+)
+async def channel_receive_handler(bot, broadcast):
+    if int(broadcast.chat.id) in Config.BANNED_CHANNELS:
+        await bot.leave_chat(broadcast.chat.id)
+        return
+    reply_markup = InlineKeyboardMarkup([[InlineKeyboardButton("🔥 Uploaded By", url=f'https://telegram.me/Star_Moviess_Tamil')]])
+    try:
+        await bot.edit_message_reply_markup(reply_markup)
+    except Exception as e:
+        print(e)
+        pass 
  
 @Bot.on_chat_join_request()
 async def req_accept(c, m):
